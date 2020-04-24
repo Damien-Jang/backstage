@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { plugin as HomePagePlugin } from '@backstage/plugin-home-page';
-export { plugin as WelcomePlugin } from '@backstage/plugin-welcome';
-export { plugin as LighthousePlugin } from '@backstage/plugin-lighthouse';
-export { plugin as InventoryPlugin } from '@backstage/plugin-inventory';
-export { plugin as Scaffolder } from '@backstage/plugin-scaffolder';
+
+import { plugin } from './plugin';
+
+describe('scaffolder', () => {
+  it('should export plugin', () => {
+    expect(plugin).toBeDefined();
+  });
+});
