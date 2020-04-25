@@ -29,18 +29,13 @@
  * limitations under the License.
  */
 import express from 'express';
+import { Repository } from 'lib/repo';
 
 export const router = express.Router();
 
 router.get('/v1/templates', async (_, res) => {
-  res
-    .status(200)
-    .send([
-      { id: 'component1' },
-      { id: 'component2' },
-      { id: 'component3' },
-      { id: 'component4' },
-    ]);
+  const templates = Repository.list();
+  res.status(200).json(templates);
 });
 
 router.get('/v1/template/:templateId', async (_, res) => {
@@ -56,7 +51,7 @@ router.get('/v1/template/:templateId', async (_, res) => {
 
 router.post('/v1/jobs', async (_, res) => {
   res
-    .status(200)
+    .status(201)
     .send([
       { id: 'component1' },
       { id: 'component2' },
