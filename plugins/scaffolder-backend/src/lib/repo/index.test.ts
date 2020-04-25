@@ -13,71 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Repo as Repository } from './';
-import * as path from 'path';
-describe('Template Repository', () => {
-  it('should load a simple template from a simple directory', async () => {
-    const testTemplateDir = path.resolve(
-      __dirname,
-      '../../../test/mock-simple-template-dir',
-    );
-    const templateInfo = require(`${testTemplateDir}/mock-template/template-info.json`);
+import { RepositoryBase, Repository } from '.';
 
-    const repository = new Repository(testTemplateDir);
+describe('Repository Interface Test', () => {
+  const mockRepo = new (class MockRepository implements RepositoryBase {
+    list = jest.fn();
+    prepare = jest.fn();
+    reindex = jest.fn();
 
-    await repository.rebuild();
+    public reset = () => {
+      this.list.mockReset();
+      this.prepare.mockReset();
+      this.reindex.mockReset();
+    };
+  })();
 
-    const templates = repository.list();
+  afterEach(() => mockRepo.reset());
 
-    expect(templates).toHaveLength(1);
-    expect(templates[0].id).toBe(templateInfo.id);
-    expect(templates[0].name).toBe(templateInfo.name);
-    expect(templates[0].description).toBe(templateInfo.description);
-    expect(templates[0].ownerId).toBe(templateInfo.ownerId);
+  it('should call list of the set repo when calling list', async () => {
+    Repository.setRepository(mockRepo);
+
+    await Repository.list();
+
+    expect(mockRepo.list).toHaveBeenCalled();
   });
 
-  it('should successfully load multiple templates from the same folder', async () => {
-    const testTemplateDir = path.resolve(
-      __dirname,
-      '../../../test/mock-multiple-templates-dir',
-    );
+  it('should reindex on the repo when calling reindex', async () => {
+    Repository.setRepository(mockRepo);
 
-    const repository = new Repository(testTemplateDir);
+    await Repository.reindex();
 
-    await repository.rebuild();
-
-    const templates = repository.list();
-
-    expect(templates).toHaveLength(2);
+    expect(mockRepo.reindex).toHaveBeenCalled();
   });
 
-  it('should return empty array when there are no templates', async () => {
-    const testTemplateDir = path.resolve(
-      __dirname,
-      '/some-folder-that-deffo-does-not-exist',
-    );
+  it('should call prepare with the correct id when calling prepare', async () => {
+    Repository.setRepository(mockRepo);
 
-    const repository = new Repository(testTemplateDir);
+    await Repository.prepare('testid');
 
-    await repository.rebuild();
-
-    const templates = repository.list();
-
-    expect(templates).toHaveLength(0);
-  });
-
-  it('should be able to handle templates with invalid json and ignore them from the returned array', async () => {
-    const testTemplateDir = path.resolve(
-      __dirname,
-      '../../../test/mock-failing-template-dir',
-    );
-
-    const repository = new Repository(testTemplateDir);
-
-    await repository.rebuild();
-
-    const templates = repository.list();
-
-    expect(templates).toHaveLength(1);
+    expect(mockRepo.prepare).toHaveBeenCalledWith('testid');
   });
 });

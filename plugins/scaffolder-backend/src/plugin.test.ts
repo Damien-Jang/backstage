@@ -30,7 +30,7 @@ describe('scaffolder backend', () => {
   };
 
   it('should return a list of templates that are in the directory which the plugin is initialised in', async () => {
-    jest.spyOn(Repository, 'list').mockReturnValue([mockTemplate]);
+    jest.spyOn(Repository, 'list').mockResolvedValue([mockTemplate]);
 
     const { body } = await supertest(app)
       .get('/v1/templates')

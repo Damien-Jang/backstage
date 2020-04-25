@@ -1,3 +1,5 @@
+import { DiskRepository } from './disk';
+
 /*
  * Copyright 2020 Spotify AB
  *
@@ -13,11 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import glob from 'glob';
-import { promises as fs } from 'fs';
-import { logger } from 'lib/logger';
-
 export interface Template {
   id: string;
   name: string;
@@ -25,58 +22,27 @@ export interface Template {
   ownerId: string;
 }
 
-export class Repo {
-  private repository: Template[] = [];
-
-  constructor(private repoDir = `${__dirname}/templates`) {
-    this.rebuild();
-  }
-
-  public list(): Template[] {
-    return this.repository;
-  }
-
-  public async rebuild(): Promise<void> {
-    this.repository = await this.index();
-  }
-
-  private async index(): Promise<Template[]> {
-    return new Promise((resolve, reject) => {
-      glob(`${this.repoDir}/**/template-info.json`, async (err, matches) => {
-        if (err) {
-          reject(err);
-        }
-
-        const fileContents: Array<{
-          path: string;
-          contents: string;
-        }> = await Promise.all(
-          matches.map(async (path: string) => ({
-            path,
-            contents: await fs.readFile(path, 'utf-8'),
-          })),
-        );
-
-        const validFiles = fileContents.reduce(
-          (templates: Template[], currentFile) => {
-            try {
-              const parsed: Template = JSON.parse(currentFile.contents);
-              return [...templates, parsed];
-            } catch (ex) {
-              logger.error('Failure parsing JSON for template', {
-                path: currentFile.path,
-              });
-            }
-
-            return templates;
-          },
-          [],
-        );
-
-        resolve(validFiles as Template[]);
-      });
-    });
-  }
+export abstract class RepositoryBase {
+  abstract async list(): Promise<Template[]>;
+  abstract async reindex(): Promise<void>;
+  // returns a directory to run cookiecutter in
+  abstract async prepare(id: string): Promise<string>;
 }
 
-export const Repository = new Repo();
+class Interface implements RepositoryBase {
+  repo?: RepositoryBase;
+
+  constructor() {
+    this.repo = new DiskRepository();
+  }
+
+  public setRepository(repo: RepositoryBase) {
+    this.repo = repo;
+  }
+
+  list = () => this.repo!.list();
+  prepare = (id: string) => this.repo!.prepare(id);
+  reindex = () => this.repo!.reindex();
+}
+
+export const Repository = new Interface();

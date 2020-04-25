@@ -34,7 +34,7 @@ import { Repository } from 'lib/repo';
 export const router = express.Router();
 
 router.get('/v1/templates', async (_, res) => {
-  const templates = Repository.list();
+  const templates = await Repository.list();
   res.status(200).json(templates);
 });
 
