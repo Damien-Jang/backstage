@@ -81,7 +81,7 @@ const Root: FC<{}> = ({ children }) => (
       <SidebarSpacer />
       <SidebarDivider />
       <SidebarItem icon={HomeIcon} to="/" text="Home" />
-      <SidebarItem icon={CreateComponentIcon} to="/scaffold" text="Create" />
+      <SidebarItem icon={CreateComponentIcon} to="/scaffolder" text="Create" />
       <SidebarItem icon={AccountTreeIcon} to="/inventory" text="Inventory" />
       <SidebarItem icon={AccountCircle} to="/login" text="Login" />
       <SidebarDivider />
